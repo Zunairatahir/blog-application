@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlogSpace | Create Blog</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+    <div class="logo">Blog<span>Space</span></div>
+
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="create-blog.html" class="active">Create Blog</a>
+    </nav>
+
+</header>
+
+
+<main class="create-page">
+
+    <div class="create-container">
+
+        <div class="auth-header">
+            <p class="eyebrow">CREATE CONTENT</p>
+            <h1>Write a New Blog</h1>
+            <p>Share your knowledge, experiences and ideas.</p>
+        </div>
+
+
+        <form id="blogForm">
+
+            <div class="form-group">
+
+                <label for="blogTitle">Blog Title</label>
+
+                <input
+                    type="text"
+                    id="blogTitle"
+                    placeholder="Enter your blog title"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="blogCategory">Category</label>
+
+                <select id="blogCategory" required>
+
+                    <option value="">Select a category</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Cybersecurity">Cybersecurity</option>
+                    <option value="Programming">Programming</option>
+                    <option value="Productivity">Productivity</option>
+                    <option value="Learning">Learning</option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="blogContent">Blog Content</label>
+
+                <textarea
+                    id="blogContent"
+                    rows="12"
+                    placeholder="Write your blog here..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <a href="dashboard.html" class="btn secondary-btn">
+                    Cancel
+                </a>
+
+                <button type="submit" class="btn primary-btn">
+                    Publish Blog
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+
+
+<script src="js/script.js"></script>
+
+</body>
+</html>
