@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="BlogSpace is a simple blog application demo.">
+  <title>BlogSpace | Blog Application</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#home" data-page="home" aria-label="BlogSpace home">BlogSpace<span>.</span></a>
+    <button class="menu-toggle" id="menuToggle" aria-expanded="false" aria-controls="mainNav">☰ Menu</button>
+    <nav id="mainNav" class="main-nav" aria-label="Main navigation">
+      <button class="nav-link active" data-page="home">Home</button>
+      <button class="nav-link" data-page="dashboard">Dashboard</button>
+      <button class="nav-link" data-page="create">Write a Blog</button>
+      <button class="nav-link" data-page="login" id="loginNav">Login</button>
+      <button class="nav-link" data-page="register" id="registerNav">Register</button>
+      <button class="nav-link hidden" id="logoutButton">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section id="home" class="page">
+      <div class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">YOUR SPACE. YOUR STORIES.</p>
+          <h1>Ideas worth <span>sharing.</span></h1>
+          <p class="hero-description">Discover fresh perspectives, share what you know, and turn your thoughts into stories.</p>
+          <div class="hero-actions">
+            <button class="button button-primary" data-page="create">Start writing <span aria-hidden="true">→</span></button>
+            <button class="button button-secondary" id="exploreButton">Explore blogs</button>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-circle"></div>
+          <div class="art-note note-one"><span class="note-icon">✦</span><span>Ideas become stories</span></div>
+          <div class="art-note note-two"><span class="note-icon">✎</span><span>Write your way</span></div>
+          <div class="art-book"><div class="book-line"></div><div class="book-line short"></div><div class="book-line"></div><div class="book-line medium"></div><div class="book-stamp">B.</div></div>
+        </div>
+      </div>
+
+      <section class="section-heading" id="blogsSection">
+        <div><p class="eyebrow">THE LATEST</p><h2>Stories from the community</h2></div>
+        <label class="search-box"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search stories..." aria-label="Search stories"></label>
+      </section>
+      <div id="blogList" class="blog-grid" aria-live="polite"></div>
+      <p id="emptyMessage" class="empty-message hidden">No stories found. Try another search or publish the first story.</p>
+    </section>
+
+    <section id="login" class="page hidden">
+      <div class="form-layout">
+        <div class="form-intro"><p class="eyebrow">WELCOME BACK</p><h1>Your next idea starts here.</h1><p>Log in to manage your posts and keep sharing your point of view.</p></div>
+        <div class="form-card">
+          <h2>Log in</h2><p class="muted">Enter your demo account details.</p>
+          <form id="loginForm">
+            <label for="loginEmail">Email address</label><input id="loginEmail" type="email" autocomplete="email" required>
+            <label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required>
+            <button class="button button-primary full-width" type="submit">Log in</button>
+          </form>
+          <p class="form-switch">Don't have an account? <button class="text-button" data-page="register">Register</button></p>
+          <p class="demo-note">Demo only: create an account on this browser first. Do not use a real password.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="register" class="page hidden">
+      <div class="form-layout">
+        <div class="form-intro"><p class="eyebrow">JOIN THE COMMUNITY</p><h1>Make room for your ideas.</h1><p>Create a demo account to publish and manage your own blog posts.</p></div>
+        <div class="form-card">
+          <h2>Create an account</h2><p class="muted">It only takes a moment.</p>
+          <form id="registerForm">
+            <label for="registerName">Full name</label><input id="registerName" type="text" autocomplete="name" maxlength="70" required>
+            <label for="registerEmail">Email address</label><input id="registerEmail" type="email" autocomplete="email" required>
+            <label for="registerPassword">Password (at least 6 characters)</label><input id="registerPassword" type="password" autocomplete="new-password" minlength="6" required>
+            <button class="button button-primary full-width" type="submit">Create account</button>
+          </form>
+          <p class="form-switch">Already registered? <button class="text-button" data-page="login">Log in</button></p>
+          <p class="demo-note">Demo only: account details are stored in this browser and are not secure.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="dashboard" class="page hidden">
+      <div class="page-title-row"><div><p class="eyebrow">YOUR WORKSPACE</p><h1>My dashboard</h1><p class="muted" id="welcomeMessage">Sign in to manage your posts.</p></div><button class="button button-primary" data-page="create">＋ New story</button></div>
+      <div class="stats-row"><div class="stat-card"><span class="stat-label">Your published stories</span><strong id="myBlogCount">0</strong></div><div class="stat-card"><span class="stat-label">Account status</span><strong id="accountStatus">Guest</strong></div></div>
+      <h2 class="subheading">Your stories</h2>
+      <div id="myBlogs" class="blog-grid"></div>
+      <p id="myEmptyMessage" class="empty-message">Log in and publish a story to see it here.</p>
+    </section>
+
+    <section id="create" class="page hidden">
+      <div class="page-title-row"><div><p class="eyebrow">PUT IT INTO WORDS</p><h1>Create a story</h1><p class="muted">Write something worth sharing with the community.</p></div></div>
+      <div class="form-card editor-card">
+        <form id="blogForm">
+          <label for="blogTitle">Story title</label><input id="blogTitle" type="text" maxlength="100" placeholder="Give your story a clear title" required>
+          <label for="blogCategory">Category</label><select id="blogCategory"><option>Personal</option><option>Technology</option><option>Education</option><option>Lifestyle</option><option>Travel</option><option>Books</option><option>Other</option></select>
+          <label for="blogExcerpt">Short summary (optional)</label><input id="blogExcerpt" type="text" maxlength="180" placeholder="What is this story about?">
+          <label for="blogContent">Story content</label><textarea id="blogContent" rows="9" maxlength="10000" placeholder="Start writing here..." required></textarea>
+          <div class="form-actions"><button class="button button-secondary" type="button" data-page="home">Cancel</button><button class="button button-primary" type="submit">Publish story →</button></div>
+          <p class="demo-note">Publishing requires a demo account. Posts are saved in this browser only.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <footer class="site-footer"><a class="brand footer-brand" href="#home" data-page="home">BlogSpace<span>.</span></a><p>© 2026 BlogSpace. A simple blog application</p><p class="footer-small">Learning demo · No backend database connected</p></footer>
+</body>
+</html>
