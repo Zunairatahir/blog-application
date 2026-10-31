@@ -2,30 +2,37 @@
 
 A responsive full-stack Blog Application developed as part of my **Full Stack Web Development Internship at Codomax Digital Solutions**.
 
-The application allows users to register, log in, create blog posts, browse published blogs, and view individual blog details. It uses MongoDB Atlas for persistent data storage and a Node.js/Express.js backend to handle API requests.
+The application allows users to register, log in, create and manage blog posts, browse published blogs, search for content, filter posts by category, and view individual blog details.
+
+The project uses **HTML, CSS, and JavaScript** for the frontend, **Node.js and Express.js** for the backend, and **MongoDB Atlas** for persistent data storage.
 
 ## Project Overview
 
-The project was developed in multiple modules, progressing from frontend development to backend implementation and database integration.
+The application was developed in multiple modules, progressing from frontend development to backend implementation, database integration, and complete CRUD functionality.
 
 ### Development Modules
 
-- **Module 1 – Frontend Development:** Created the responsive user interface using HTML, CSS, and JavaScript.
-- **Module 2 – Backend Development:** Implemented the backend using Node.js and Express.js, including REST API endpoints for user and blog operations.
+- **Module 1 – Frontend Development:** Created a responsive user interface using HTML, CSS, and JavaScript.
+- **Module 2 – Backend Development:** Developed the backend using Node.js and Express.js and implemented REST API endpoints.
 - **Module 3 – Database Integration:** Connected the application to MongoDB Atlas, implemented database operations, added individual blog details, and introduced bcrypt password hashing.
+- **Module 4 – CRUD Functionality:** Implemented Create, Read, Update, and Delete operations for blog posts, along with search and category filtering.
 
 ## Features
 
 ### Frontend
 
-- Responsive homepage displaying blog posts.
+- Responsive homepage displaying published blog posts.
 - User registration and login interfaces.
-- User dashboard.
-- Create Blog functionality.
-- Blog categories.
+- User dashboard for managing personal blog posts.
+- Create new blog posts.
+- Edit existing blog posts.
+- Delete blog posts.
 - Individual blog details page.
 - Read More functionality.
+- Search blogs using keywords.
+- Filter blogs by category.
 - Dynamic blog retrieval from the backend.
+- Form validation and user feedback.
 - Responsive layout for different screen sizes.
 
 ### Backend
@@ -33,14 +40,18 @@ The project was developed in multiple modules, progressing from frontend develop
 - REST API development using Node.js and Express.js.
 - MongoDB Atlas database connection using Mongoose.
 - User registration and login endpoints.
-- Password hashing using bcryptjs.
-- Blog creation and deletion.
-- Retrieve all blog posts from the database.
+- Password hashing and comparison using bcryptjs.
+- Create new blog posts.
+- Retrieve all published blog posts.
 - Retrieve individual blog details using blog ID.
+- Update existing blog posts.
+- Delete blog posts.
 - Retrieve blogs associated with a specific user.
 - Input validation and error handling.
+- Ownership checks for blog editing and deletion.
 - CORS configuration.
 - Environment variable management using dotenv.
+- Backend health-check endpoint.
 
 ### Database
 
@@ -58,7 +69,7 @@ The project was developed in multiple modules, progressing from frontend develop
 | Backend | Node.js, Express.js |
 | Database | MongoDB Atlas, Mongoose |
 | Security | bcryptjs |
-| Backend utilities | dotenv, CORS |
+| Backend Utilities | dotenv, CORS |
 | Tools | Visual Studio Code, Git, GitHub, npm |
 
 ## Project Structure
@@ -67,8 +78,6 @@ The project was developed in multiple modules, progressing from frontend develop
 blog-application/
 │
 ├── backend/
-│   ├── node_modules/
-│   ├── .env
 │   ├── package.json
 │   ├── package-lock.json
 │   ├── server.js
@@ -79,10 +88,11 @@ blog-application/
 │   ├── style.css
 │   └── script.js
 │
+├── .gitignore
 └── README.md
 ```
 
-**Note:** `node_modules/` and `.env` are local files and should not be uploaded to GitHub. The `.env` file contains private database credentials.
+**Note:** `node_modules/` and `.env` are local files and should not be uploaded to GitHub. The `.env` file contains private database credentials. Make sure they are excluded through `.gitignore`.
 
 ## API Endpoints
 
@@ -91,12 +101,13 @@ blog-application/
 | GET | `/` | Check API status and available endpoints |
 | GET | `/api/health` | Check backend health |
 | POST | `/api/register` | Register a new user |
-| POST | `/api/login` | Authenticate a user |
+| POST | `/api/login` | Log in an existing user |
 | GET | `/api/blogs` | Retrieve all blog posts |
 | GET | `/api/blogs/:id` | Retrieve an individual blog |
 | POST | `/api/blogs` | Create a new blog post |
-| GET | `/api/users/:id/blogs` | Retrieve blogs belonging to a user |
+| PUT | `/api/blogs/:id` | Update an existing blog post |
 | DELETE | `/api/blogs/:id` | Delete a blog post |
+| GET | `/api/users/:id/blogs` | Retrieve blogs belonging to a specific user |
 
 ## Getting Started
 
@@ -108,7 +119,7 @@ Follow these steps to run the project locally.
 - npm
 - MongoDB Atlas account
 - Visual Studio Code
-- Live Server extension (for running the frontend)
+- Live Server extension
 
 ### 1. Clone the Repository
 
@@ -135,7 +146,7 @@ npm install
 
 Create a `.env` file inside the `backend` directory.
 
-Add your MongoDB connection string:
+Add your MongoDB connection string and port:
 
 ```env
 MONGO_URI=your_mongodb_connection_string
@@ -160,6 +171,12 @@ The backend API will run at:
 http://localhost:3000
 ```
 
+To check whether the backend is running, open:
+
+```text
+http://localhost:3000/api/health
+```
+
 ### 5. Run the Frontend
 
 Open the `frontend` folder in Visual Studio Code.
@@ -168,11 +185,17 @@ Launch `index.html` using the Live Server extension.
 
 Make sure the backend server is running so the frontend can communicate with the API.
 
+The frontend API configuration should point to:
+
+```javascript
+const API_URL = "http://localhost:3000/api";
+```
+
 ## Password Migration
 
 The project includes `migratePasswords.js`, a one-time migration script used to convert existing plain-text user passwords in MongoDB into bcrypt hashes.
 
-To run the migration when required:
+To run the migration when required, navigate to the backend directory and execute:
 
 ```bash
 node migratePasswords.js
@@ -187,20 +210,24 @@ The script skips passwords that are already bcrypt-hashed.
 Through this project, I gained practical experience in:
 
 - Building responsive frontend interfaces.
-- Developing backend applications with Node.js and Express.js.
+- Developing backend applications using Node.js and Express.js.
 - Creating and using REST APIs.
 - Connecting applications to MongoDB Atlas.
 - Designing database schemas using Mongoose.
 - Implementing password hashing with bcryptjs.
-- Retrieving and managing database records.
+- Performing CRUD operations on database records.
+- Implementing blog ownership checks.
 - Integrating frontend and backend functionality.
+- Implementing search and category-based filtering.
+- Handling API requests, validation, and errors.
+- Managing environment variables and project dependencies.
 
 ## Future Improvements
 
-- Implement JWT-based authentication.
-- Add stronger authorization and protected routes.
-- Introduce blog editing functionality.
-- Improve application validation and security.
+- Implement JWT-based authentication and secure session management.
+- Strengthen authorization and protected routes.
+- Improve application security and validation.
+- Add image uploads for blog posts.
 - Deploy the complete frontend and backend application.
 
 ## Author
