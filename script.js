@@ -4,6 +4,7 @@ const API_URL = "http://localhost:3000/api";
 let currentUser = null;
 let allBlogs = [];
 let toastTimer;
+let editingBlogId = null;
 
 const $ = (id) => document.getElementById(id);
 
@@ -30,6 +31,8 @@ async function apiRequest(path, options = {}) {
 // TOAST NOTIFICATION
 function showToast(message) {
   const toast = $("toast");
+  if (!toast) return;
+
   toast.textContent = message;
   toast.classList.add("show");
 
@@ -42,8 +45,11 @@ function showToast(message) {
 
 // PAGE NAVIGATION
 function showPage(pageId) {
-  if (pageId === "create" && !currentUser) {
-    showToast("Please log in before publishing a story.");
+  if (
+    (pageId === "create" || pageId === "editBlog") &&
+    !currentUser
+  ) {
+    showToast("Please log in first.");
     pageId = "login";
   }
 
@@ -98,8 +104,17 @@ function getBlogId(blog) {
   return blog.id || blog._id;
 }
 
+// CHECK BLOG OWNERSHIP
+function isOwnBlog(blog) {
+  return Boolean(
+    currentUser &&
+    blog.userId &&
+    String(blog.userId) === String(currentUser.id)
+  );
+}
+
 // CREATE BLOG CARD
-function createBlogCard(blog, canDelete = false) {
+function createBlogCard(blog, canManage = false) {
   const card = makeElement("article", "blog-card");
   const top = makeElement("div", "blog-card-top");
 
@@ -152,12 +167,25 @@ function createBlogCard(blog, canDelete = false) {
     )
   );
 
-  // DELETE BUTTON FOR OWN BLOGS
-  if (
-    canDelete &&
-    currentUser &&
-    String(blog.userId) === String(currentUser.id)
-  ) {
+  // EDIT AND DELETE BUTTONS FOR OWN BLOGS
+  if (canManage && isOwnBlog(blog)) {
+
+    // EDIT BUTTON
+    const editButton = makeElement(
+      "button",
+      "card-edit",
+      "Edit"
+    );
+
+    editButton.type = "button";
+
+    editButton.addEventListener("click", () => {
+      openEditBlog(getBlogId(blog));
+    });
+
+    meta.appendChild(editButton);
+
+    // DELETE BUTTON
     const deleteButton = makeElement(
       "button",
       "card-delete",
@@ -173,7 +201,7 @@ function createBlogCard(blog, canDelete = false) {
 
       try {
         await apiRequest(
-          `/blogs/${getBlogId(blog)}`,
+          `/blogs/${encodeURIComponent(getBlogId(blog))}`,
           { method: "DELETE" }
         );
 
@@ -206,7 +234,7 @@ async function loadBlogs() {
   return allBlogs;
 }
 
-// DISPLAY ALL BLOGS ON HOME PAGE
+// DISPLAY BLOGS WITH SEARCH AND CATEGORY FILTER
 async function renderBlogs() {
   const list = $("blogList");
 
@@ -218,6 +246,7 @@ async function renderBlogs() {
     await loadBlogs();
 
     const searchTerm = $("searchInput").value.trim().toLowerCase();
+    const selectedCategory = $("categoryFilter").value;
 
     const filtered = [...allBlogs].filter((blog) => {
       const searchable = [
@@ -227,7 +256,13 @@ async function renderBlogs() {
         blog.authorName
       ].join(" ").toLowerCase();
 
-      return searchable.includes(searchTerm);
+      const matchesSearch = searchable.includes(searchTerm);
+
+      const matchesCategory =
+        selectedCategory === "all" ||
+        blog.category === selectedCategory;
+
+      return matchesSearch && matchesCategory;
     });
 
     filtered.forEach((blog) => {
@@ -235,7 +270,7 @@ async function renderBlogs() {
     });
 
     $("emptyMessage").textContent =
-      "No stories found. Try another search or publish the first story.";
+      "No stories found. Try another search or category.";
 
     $("emptyMessage").classList.toggle(
       "hidden",
@@ -267,12 +302,10 @@ async function openBlogDetails(blogId) {
   $("detailContent").textContent = "Please wait while the blog loads.";
 
   try {
-    // Fetch the selected blog from MongoDB
     const blog = await apiRequest(
       `/blogs/${encodeURIComponent(blogId)}`
     );
 
-    // Display individual blog information
     $("detailTitle").textContent = blog.title || "Untitled";
 
     $("detailMeta").textContent =
@@ -284,7 +317,6 @@ async function openBlogDetails(blogId) {
     $("detailContent").textContent =
       blog.content || "No content available.";
 
-    // Preserve paragraph breaks
     $("detailContent").style.whiteSpace = "pre-wrap";
 
   } catch (error) {
@@ -300,6 +332,91 @@ async function openBlogDetails(blogId) {
 // BACK TO BLOG LIST
 $("backToBlogs").addEventListener("click", () => {
   showPage("home");
+});
+
+// OPEN EDIT BLOG PAGE
+async function openEditBlog(blogId) {
+  if (!currentUser) {
+    showToast("Please log in first.");
+    showPage("login");
+    return;
+  }
+
+  try {
+    const blog = await apiRequest(
+      `/blogs/${encodeURIComponent(blogId)}`
+    );
+
+    if (!isOwnBlog(blog)) {
+      showToast("You can only edit your own stories.");
+      return;
+    }
+
+    editingBlogId = getBlogId(blog);
+
+    $("editBlogTitle").value = blog.title || "";
+    $("editBlogCategory").value = blog.category || "Other";
+    $("editBlogContent").value = blog.content || "";
+
+    showPage("editBlog");
+
+  } catch (error) {
+    showToast(error.message);
+  }
+}
+
+// UPDATE BLOG
+$("editBlogForm").addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (!currentUser || !editingBlogId) {
+    showToast("Unable to update this story.");
+    return;
+  }
+
+  const title = $("editBlogTitle").value.trim();
+  const category = $("editBlogCategory").value;
+  const content = $("editBlogContent").value.trim();
+
+  if (!title || !content) {
+    showToast("Please enter a title and story content.");
+    return;
+  }
+
+  try {
+    const result = await apiRequest(
+      `/blogs/${encodeURIComponent(editingBlogId)}`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          title,
+          category,
+          content
+        })
+      }
+    );
+
+    editingBlogId = null;
+
+    event.target.reset();
+
+    showToast(result.message || "Story updated successfully.");
+
+    await loadBlogs();
+    await renderDashboard();
+
+    showPage("dashboard");
+
+  } catch (error) {
+    showToast(error.message);
+  }
+});
+
+// CANCEL EDITING
+$("cancelEditButton").addEventListener("click", () => {
+  editingBlogId = null;
+  $("editBlogForm").reset();
+  showPage("dashboard");
 });
 
 // DASHBOARD
@@ -327,7 +444,7 @@ async function renderDashboard() {
 
   try {
     const ownBlogs = await apiRequest(
-      `/users/${currentUser.id}/blogs`
+      `/users/${encodeURIComponent(currentUser.id)}/blogs`
     );
 
     $("myBlogCount").textContent = String(ownBlogs.length);
@@ -384,10 +501,10 @@ $("exploreButton").addEventListener("click", () => {
   });
 });
 
-// SEARCH BLOGS
-$("searchInput").addEventListener("input", () => {
-  renderBlogs();
-});
+// SEARCH AND CATEGORY FILTERS
+$("searchInput").addEventListener("input", renderBlogs);
+
+$("categoryFilter").addEventListener("change", renderBlogs);
 
 // REGISTRATION
 $("registerForm").addEventListener("submit", async (event) => {
@@ -485,6 +602,7 @@ $("blogForm").addEventListener("submit", async (event) => {
 // LOGOUT
 $("logoutButton").addEventListener("click", () => {
   currentUser = null;
+  editingBlogId = null;
 
   updateNavigation();
 
