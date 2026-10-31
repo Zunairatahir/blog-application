@@ -58,6 +58,7 @@ app.get("/", (req, res) => {
       "POST /api/register",
       "POST /api/login",
       "POST /api/blogs",
+      "PUT /api/blogs/:id",
       "GET /api/users/:id/blogs",
       "DELETE /api/blogs/:id"
     ]
@@ -133,7 +134,6 @@ app.post("/api/login", async (req, res) => {
       ? req.body.password
       : "";
 
-    // Find user using email
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -180,7 +180,8 @@ app.get("/api/blogs", async (req, res) => {
       authorName: blog.authorName,
       author: blog.authorName,
       userId: blog.userId.toString(),
-      createdAt: blog.createdAt
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt
     })));
 
   } catch (error) {
@@ -213,7 +214,8 @@ app.get("/api/blogs/:id", async (req, res) => {
       authorName: blog.authorName,
       author: blog.authorName,
       userId: blog.userId.toString(),
-      createdAt: blog.createdAt
+      createdAt: blog.createdAt,
+      updatedAt: blog.updatedAt
     });
 
   } catch (error) {
@@ -284,13 +286,113 @@ app.post("/api/blogs", async (req, res) => {
         authorName: blog.authorName,
         author: blog.authorName,
         userId: blog.userId.toString(),
-        createdAt: blog.createdAt
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt
       }
     });
 
   } catch (error) {
     console.error("Create blog error:", error);
     return res.status(500).json({ message: "Could not create blog." });
+  }
+});
+
+// Update blog
+app.put("/api/blogs/:id", async (req, res) => {
+  try {
+    const userId = req.header("x-user-id");
+    const blogId = req.params.id;
+
+    // Validate user ID and blog ID
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(blogId)
+    ) {
+      return res.status(400).json({
+        message: "Invalid user or blog ID."
+      });
+    }
+
+    // Check whether the user exists
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(401).json({
+        message: "Please log in before editing a post."
+      });
+    }
+
+    // Find the blog
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({
+        message: "Blog not found."
+      });
+    }
+
+    // Check blog ownership
+    if (blog.userId.toString() !== userId) {
+      return res.status(403).json({
+        message: "You can only edit your own posts."
+      });
+    }
+
+    // Get updated values
+    const title = typeof req.body.title === "string"
+      ? req.body.title.trim()
+      : "";
+
+    const category = typeof req.body.category === "string"
+      ? req.body.category.trim()
+      : "General";
+
+    const content = typeof req.body.content === "string"
+      ? req.body.content.trim()
+      : "";
+
+    // Validate updated values
+    if (!title || !content) {
+      return res.status(400).json({
+        message: "Title and content are required."
+      });
+    }
+
+    if (title.length > 120 || content.length > 10000) {
+      return res.status(400).json({
+        message: "Title or content is too long."
+      });
+    }
+
+    // Update blog fields
+    blog.title = title;
+    blog.category = category || "General";
+    blog.content = content;
+
+    // Save updated blog in MongoDB
+    await blog.save();
+
+    return res.json({
+      message: "Blog updated successfully.",
+      blog: {
+        id: blog._id.toString(),
+        _id: blog._id.toString(),
+        title: blog.title,
+        category: blog.category,
+        content: blog.content,
+        authorName: blog.authorName,
+        author: blog.authorName,
+        userId: blog.userId.toString(),
+        createdAt: blog.createdAt,
+        updatedAt: blog.updatedAt
+      }
+    });
+
+  } catch (error) {
+    console.error("Update blog error:", error);
+    return res.status(500).json({
+      message: "Could not update blog."
+    });
   }
 });
 
